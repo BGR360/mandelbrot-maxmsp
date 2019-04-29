@@ -1,0 +1,65 @@
+<jittershader name="mandelbrot">
+	<description>
+	A shader that renders the Mandelbrot set for specified bounds.
+	</description>
+	
+	<param name="minI" type="float" default="-1.0" />
+	<param name="maxI" type="float" default="1.0" />
+	<param name="minR" type="float" default="-1.0" />
+	<param name="maxR" type="float" default="1.0" />
+	<language name="glsl" version="4.0">
+		<bind param="minI" program="fp" />
+		<bind param="maxI" program="fp" />
+		<bind param="minR" program="fp" />
+		<bind param="maxR" program="fp" />
+		<program name="vp" type="vertex" source="sh.passthrudim.vp.glsl" />
+		<program name="fp" type="fragment">
+<![CDATA[
+
+varying vec2 texcoord0;
+
+uniform float minI;
+uniform float maxI;
+uniform float minR;
+uniform float maxR;
+
+void main()
+{	
+	// coordinates in complex space
+	vec2 c = vec2(
+		minR + (texcoord0.x * (maxR-minR)),
+		minI + (texcoord0.y * (maxI-minI))
+	);
+	
+	vec2 z = vec2(0.);
+	float iterations = 0.0;
+	float maxiterations = 1000.0;
+	const int imaxiterations = 1000;
+	
+	for (int i = 0; i < imaxiterations; i++) {
+		float twoab = 2.0 * z.x * z.y;
+		float aa = z.x * z.x;
+		float bb = z.y * z.y;
+		z.x = (aa - bb) + c.x;
+		z.y = twoab + c.y;
+		
+		if (z.x*z.x + z.y*z.y > 4.0) {
+			break;
+		}
+		
+		iterations += 1.0;
+	}
+	
+	vec4 color = vec4(0., 0., 0., 1.);
+	
+	if (iterations < maxiterations) {
+		color = vec4(sqrt(iterations / maxiterations));
+	}
+	
+	gl_FragColor = color;
+}
+
+]]>
+		</program>
+	</language>
+</jittershader>
